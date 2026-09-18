@@ -1,0 +1,32 @@
+[
+  {
+    "incident_id": "INC-2026-0901-001",
+    "title": "Authentication service returned HTTP 503 errors",
+    "service": "auth-service",
+    "environment": "production-simulated",
+    "severity": "SEV-2",
+    "status": "resolved",
+    "started_at": "2026-09-01T09:30:00Z",
+    "resolved_at": "2026-09-01T10:12:00Z",
+    "symptoms": [
+      "HTTP 503 responses on POST /api/v1/login",
+      "Response time exceeded 3000 milliseconds",
+      "DATABASE_TIMEOUT errors in application logs"
+    ],
+    "root_cause": "Database connection pool exhaustion caused by abandoned connections after a simulated configuration change.",
+    "resolution": [
+      "Rolled back the connection-pool configuration change",
+      "Restarted the unhealthy application instance",
+      "Verified database connectivity",
+      "Monitored login requests for 15 minutes"
+    ],
+    "validation": {
+      "health_endpoint": "healthy",
+      "http_503_rate": "below alert threshold",
+      "average_response_time_ms": 184,
+      "monitoring_period_minutes": 15
+    },
+    "related_runbook": "RB-HTTP-503-001",
+    "synthetic": true
+  }
+]

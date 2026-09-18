@@ -1,0 +1,39 @@
+# Virtual environments
+.venv/
+.venv-1/
+venv/
+env/
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+.ruff_cache/
+
+# Vector indexes and generated data
+vector_store/
+faiss_index/
+*.faiss
+*.pkl
+
+# IDE and operating system
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs and temporary files
+*.log
+logs/
+tmp/
+temp/
+vector_store_mock/
