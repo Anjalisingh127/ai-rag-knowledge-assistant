@@ -34,7 +34,9 @@ class ContextGenerator(Generator):
         ranked = []
         for sentence in sentences:
             clean = sentence.strip()
-            if not clean or clean.startswith(("[SOURCE", "title:", "source:", "chunk_id:", "content:")):
+            if not clean or clean.startswith(
+                ("[SOURCE", "title:", "source:", "chunk_id:", "content:")
+            ):
                 continue
             score = sum(term in clean.lower() for term in query_terms)
             if score:

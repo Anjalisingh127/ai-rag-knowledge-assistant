@@ -60,7 +60,7 @@ def main() -> None:
             f"distance={distance:.4f}"
         )
 
-    assert len(chunks) == 7, "Expected seven chunks from the current sample data."
+    assert chunks, "Expected the knowledge base to produce at least one chunk."
     assert results, "Search returned no results."
     assert any(
         "503" in document.page_content or "DATABASE_TIMEOUT" in document.page_content

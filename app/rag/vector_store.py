@@ -1,5 +1,5 @@
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from langchain_community.vectorstores import FAISS
@@ -9,7 +9,6 @@ from langchain_core.embeddings import Embeddings
 from app.core.config import get_settings
 from app.core.exceptions import VectorStoreError
 from app.core.logging_config import get_logger
-
 
 logger = get_logger(__name__)
 
@@ -40,7 +39,7 @@ def build_vector_store(
             else settings.openai_embedding_model
         )
         manifest = {
-            "created_at": datetime.now(timezone.utc).isoformat(),
+            "created_at": datetime.now(UTC).isoformat(),
             "chunk_count": len(documents),
             "embedding_provider": settings.embedding_provider,
             "embedding_model": model_name,

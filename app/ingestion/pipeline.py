@@ -9,14 +9,13 @@ from app.core.exceptions import DocumentProcessingError
 from app.core.logging_config import get_logger
 from app.ingestion.loaders import load_knowledge_base
 
-
 logger = get_logger(__name__)
 
 
 def _create_chunk_id(source: str, chunk_index: int, content: str) -> str:
     """Create a stable identifier for a document chunk."""
 
-    identifier = f"{source}:{chunk_index}:{content}".encode("utf-8")
+    identifier = f"{source}:{chunk_index}:{content}".encode()
     return hashlib.sha256(identifier).hexdigest()[:16]
 
 

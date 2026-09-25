@@ -9,10 +9,13 @@ from langchain_core.documents import Document
 from app.core.exceptions import DocumentProcessingError
 from app.core.logging_config import get_logger
 
-
 logger = get_logger(__name__)
 
 SUPPORTED_EXTENSIONS = {".md", ".txt", ".json", ".csv", ".pdf"}
+
+# Only these directories are part of the searchable RAG knowledge corpus.
+# Evaluation datasets are intentionally excluded to prevent benchmark leakage.
+KNOWLEDGE_BASE_DIRECTORIES = ("incidents", "runbooks", "faq")
 
 
 def _base_metadata(file_path: Path, data_root: Path) -> dict[str, Any]:
@@ -195,7 +198,7 @@ def load_document(
 
 
 def load_knowledge_base(data_directory: Path) -> list[Document]:
-    """Recursively load every supported file from the data directory."""
+    """Load only approved directories from the searchable knowledge corpus."""
 
     if not data_directory.exists():
         raise DocumentProcessingError(
@@ -205,11 +208,26 @@ def load_knowledge_base(data_directory: Path) -> list[Document]:
 
     documents: list[Document] = []
 
-    for file_path in sorted(data_directory.rglob("*")):
-        if not file_path.is_file():
+    for directory_name in KNOWLEDGE_BASE_DIRECTORIES:
+        knowledge_directory = data_directory / directory_name
+
+        if not knowledge_directory.exists():
+            logger.warning(
+                "Knowledge-base directory does not exist: %s",
+                knowledge_directory,
+            )
             continue
 
-        documents.extend(load_document(file_path, data_directory))
+        for file_path in sorted(knowledge_directory.rglob("*")):
+            if not file_path.is_file():
+                continue
+
+            documents.extend(
+                load_document(
+                    file_path=file_path,
+                    data_root=data_directory,
+                )
+            )
 
     logger.info(
         "Knowledge base loaded with %s document records.",

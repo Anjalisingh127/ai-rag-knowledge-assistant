@@ -3,11 +3,10 @@ import json
 import logging
 import sys
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from app.core.config import get_settings
-
 
 _request_id: contextvars.ContextVar[str] = contextvars.ContextVar(
     "request_id",
@@ -20,7 +19,7 @@ class JsonFormatter(logging.Formatter):
 
     def format(self, record: logging.LogRecord) -> str:
         log_entry: dict[str, Any] = {
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "level": record.levelname,
             "logger": record.name,
             "request_id": _request_id.get(),

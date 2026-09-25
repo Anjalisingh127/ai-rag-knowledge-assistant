@@ -1,3 +1,5 @@
+from typing import Annotated
+
 from fastapi import APIRouter, Depends
 
 from app.api.dependencies import get_rag_service
@@ -16,7 +18,6 @@ from app.core.logging_config import create_request_id
 from app.evaluation.runner import run_retrieval_evaluation
 from app.ingestion.loaders import load_knowledge_base
 from app.rag.service import RAGService
-
 
 router = APIRouter()
 
@@ -40,7 +41,7 @@ def health() -> HealthResponse:
 @router.post("/api/retrieve", response_model=RetrieveResponse)
 def retrieve(
     request: QueryRequest,
-    service: RAGService = Depends(get_rag_service),
+    service: Annotated[RAGService, Depends(get_rag_service)],
 ) -> RetrieveResponse:
     request_id = create_request_id()
     settings = get_settings()
@@ -71,7 +72,7 @@ def retrieve(
 @router.post("/api/query", response_model=QueryResponse)
 def query(
     request: QueryRequest,
-    service: RAGService = Depends(get_rag_service),
+    service: Annotated[RAGService, Depends(get_rag_service)],
 ) -> QueryResponse:
     request_id = create_request_id()
     settings = get_settings()

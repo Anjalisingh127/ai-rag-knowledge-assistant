@@ -7,7 +7,6 @@ from app.ingestion.pipeline import prepare_knowledge_base
 from app.rag.embeddings import get_embeddings
 from app.rag.vector_store import build_vector_store
 
-
 logger = get_logger(__name__)
 
 

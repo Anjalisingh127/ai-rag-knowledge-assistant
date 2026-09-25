@@ -37,3 +37,6 @@ logs/
 tmp/
 temp/
 vector_store_mock/
+
+# Package metadata
+*.egg-info/

@@ -1,0 +1,10 @@
+{
+  "evaluation_cases": 30,
+  "answerable_cases": 25,
+  "top_k": 5,
+  "embedding_strategy": "minilm",
+  "hit_rate_at_k": 1.0,
+  "recall_at_k": 1.0,
+  "mrr": 0.92,
+  "failures": []
+}

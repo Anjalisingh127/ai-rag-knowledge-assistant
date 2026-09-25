@@ -9,7 +9,6 @@ from app.core.logging_config import (
     get_request_id,
 )
 
-
 configure_logging()
 
 app = FastAPI(

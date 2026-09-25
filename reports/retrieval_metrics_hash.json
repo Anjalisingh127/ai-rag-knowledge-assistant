@@ -1,0 +1,38 @@
+{
+  "evaluation_cases": 30,
+  "answerable_cases": 25,
+  "top_k": 5,
+  "embedding_strategy": "hash",
+  "hit_rate_at_k": 0.92,
+  "recall_at_k": 0.92,
+  "mrr": 0.6013333333333333,
+  "failures": [
+    {
+      "id": "Q013",
+      "question": "How do I troubleshoot connection refused errors?",
+      "expected_sources": [
+        "runbooks/network_connectivity.md"
+      ],
+      "retrieved_sources": [
+        "incidents/incidents.json",
+        "runbooks/authentication_failure.md",
+        "faq/support_faq.md"
+      ],
+      "failure_type": "retrieval_failure"
+    },
+    {
+      "id": "Q014",
+      "question": "What should I check for a DNS resolution failure?",
+      "expected_sources": [
+        "runbooks/network_connectivity.md"
+      ],
+      "retrieved_sources": [
+        "incidents/incidents.json",
+        "faq/support_faq.md",
+        "runbooks/http_503_service_unavailable.md",
+        "runbooks/authentication_failure.md"
+      ],
+      "failure_type": "retrieval_failure"
+    }
+  ]
+}

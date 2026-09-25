@@ -1,9 +1,9 @@
+from app.core.config import get_settings
 from app.evaluation.metrics import (
     aggregate_retrieval_metrics,
     evaluate_retrieval_case,
 )
 from app.evaluation.runner import load_evaluation_dataset
-from app.core.config import get_settings
 
 
 def test_retrieval_metric_math():

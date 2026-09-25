@@ -6,7 +6,6 @@ from app.rag.context import build_context
 from app.rag.generation import Generator
 from app.rag.retriever import RetrievedChunk, VectorRetriever, unique_sources
 
-
 _STOPWORDS = {
     "what", "when", "where", "which", "with", "from", "that", "this",
     "should", "could", "would", "about", "after", "before", "into",
