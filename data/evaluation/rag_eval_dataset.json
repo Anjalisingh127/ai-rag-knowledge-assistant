@@ -1,0 +1,234 @@
+[
+  {
+    "id": "Q001",
+    "question": "How should I troubleshoot repeated HTTP 503 errors?",
+    "expected_sources": [
+      "runbooks/http_503_service_unavailable.md"
+    ],
+    "answerable": true
+  },
+  {
+    "id": "Q002",
+    "question": "What should I check when a service returns 503 after a deployment?",
+    "expected_sources": [
+      "runbooks/http_503_service_unavailable.md"
+    ],
+    "answerable": true
+  },
+  {
+    "id": "Q003",
+    "question": "What evidence should be collected for a 503 incident?",
+    "expected_sources": [
+      "runbooks/http_503_service_unavailable.md",
+      "faq/support_faq.md"
+    ],
+    "answerable": true
+  },
+  {
+    "id": "Q004",
+    "question": "How do I investigate a database timeout?",
+    "expected_sources": [
+      "runbooks/database_timeout.md"
+    ],
+    "answerable": true
+  },
+  {
+    "id": "Q005",
+    "question": "Why can a database connection pool become exhausted?",
+    "expected_sources": [
+      "runbooks/database_timeout.md"
+    ],
+    "answerable": true
+  },
+  {
+    "id": "Q006",
+    "question": "What should I validate after fixing a database timeout?",
+    "expected_sources": [
+      "runbooks/database_timeout.md"
+    ],
+    "answerable": true
+  },
+  {
+    "id": "Q007",
+    "question": "How do I troubleshoot repeated 401 authentication failures?",
+    "expected_sources": [
+      "runbooks/authentication_failure.md"
+    ],
+    "answerable": true
+  },
+  {
+    "id": "Q008",
+    "question": "What can cause token validation failures?",
+    "expected_sources": [
+      "runbooks/authentication_failure.md"
+    ],
+    "answerable": true
+  },
+  {
+    "id": "Q009",
+    "question": "What should I check after a secret rotation breaks authentication?",
+    "expected_sources": [
+      "runbooks/authentication_failure.md"
+    ],
+    "answerable": true
+  },
+  {
+    "id": "Q010",
+    "question": "How should I investigate slow API responses?",
+    "expected_sources": [
+      "runbooks/slow_api_response.md"
+    ],
+    "answerable": true
+  },
+  {
+    "id": "Q011",
+    "question": "What can cause high p95 latency without more 5xx errors?",
+    "expected_sources": [
+      "runbooks/slow_api_response.md"
+    ],
+    "answerable": true
+  },
+  {
+    "id": "Q012",
+    "question": "How should I validate an API performance fix?",
+    "expected_sources": [
+      "runbooks/slow_api_response.md"
+    ],
+    "answerable": true
+  },
+  {
+    "id": "Q013",
+    "question": "How do I troubleshoot connection refused errors?",
+    "expected_sources": [
+      "runbooks/network_connectivity.md"
+    ],
+    "answerable": true
+  },
+  {
+    "id": "Q014",
+    "question": "What should I check for a DNS resolution failure?",
+    "expected_sources": [
+      "runbooks/network_connectivity.md"
+    ],
+    "answerable": true
+  },
+  {
+    "id": "Q015",
+    "question": "How can I distinguish DNS failure from a TCP timeout?",
+    "expected_sources": [
+      "runbooks/network_connectivity.md"
+    ],
+    "answerable": true
+  },
+  {
+    "id": "Q016",
+    "question": "What evidence should I collect before escalating an incident?",
+    "expected_sources": [
+      "faq/support_faq.md"
+    ],
+    "answerable": true
+  },
+  {
+    "id": "Q017",
+    "question": "Should I immediately restart a service after an HTTP 503?",
+    "expected_sources": [
+      "faq/support_faq.md",
+      "runbooks/http_503_service_unavailable.md"
+    ],
+    "answerable": true
+  },
+  {
+    "id": "Q018",
+    "question": "How should API keys appear in logs?",
+    "expected_sources": [
+      "faq/support_faq.md"
+    ],
+    "answerable": true
+  },
+  {
+    "id": "Q019",
+    "question": "When is an incident resolution complete?",
+    "expected_sources": [
+      "faq/support_faq.md"
+    ],
+    "answerable": true
+  },
+  {
+    "id": "Q020",
+    "question": "When should an application support issue be escalated?",
+    "expected_sources": [
+      "faq/support_faq.md"
+    ],
+    "answerable": true
+  },
+  {
+    "id": "Q021",
+    "question": "What caused the payment service database timeout incident?",
+    "expected_sources": [
+      "incidents/incidents.json"
+    ],
+    "answerable": true
+  },
+  {
+    "id": "Q022",
+    "question": "Which incident involved a missing database index?",
+    "expected_sources": [
+      "incidents/incidents.json"
+    ],
+    "answerable": true
+  },
+  {
+    "id": "Q023",
+    "question": "Which service had a DNS hostname typo?",
+    "expected_sources": [
+      "incidents/incidents.json"
+    ],
+    "answerable": true
+  },
+  {
+    "id": "Q024",
+    "question": "What resolved the authentication failure after secret rotation?",
+    "expected_sources": [
+      "incidents/incidents.json"
+    ],
+    "answerable": true
+  },
+  {
+    "id": "Q025",
+    "question": "Which incident involved cache connection refusal?",
+    "expected_sources": [
+      "incidents/incidents.json"
+    ],
+    "answerable": true
+  },
+  {
+    "id": "Q026",
+    "question": "How do I fix Kubernetes pod eviction?",
+    "expected_sources": [],
+    "answerable": false
+  },
+  {
+    "id": "Q027",
+    "question": "How do I rotate an AWS IAM access key?",
+    "expected_sources": [],
+    "answerable": false
+  },
+  {
+    "id": "Q028",
+    "question": "What is the Terraform command to destroy infrastructure?",
+    "expected_sources": [],
+    "answerable": false
+  },
+  {
+    "id": "Q029",
+    "question": "How do I tune a Kafka consumer group?",
+    "expected_sources": [],
+    "answerable": false
+  },
+  {
+    "id": "Q030",
+    "question": "How do I troubleshoot a Redis cluster failover?",
+    "expected_sources": [],
+    "answerable": false
+  }
+]

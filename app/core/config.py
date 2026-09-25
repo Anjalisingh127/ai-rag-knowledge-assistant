@@ -30,6 +30,8 @@ class Settings(BaseSettings):
     openai_embedding_model: str = "text-embedding-3-small"
 
     llm_provider: Literal["context", "openai", "ollama"] = "context"
+    ollama_base_url: str = "http://localhost:11434"
+    ollama_model: str = "llama3.2:3b"
 
     chunk_size: int = Field(default=600, ge=200, le=4000)
     chunk_overlap: int = Field(default=80, ge=0, le=1000)
@@ -46,9 +48,12 @@ class Settings(BaseSettings):
     def validate_configuration(self) -> "Settings":
         if self.chunk_overlap >= self.chunk_size:
             raise ValueError("CHUNK_OVERLAP must be smaller than CHUNK_SIZE.")
-        if self.embedding_provider == "openai" and not self.has_openai_key:
+        if (
+            self.embedding_provider == "openai"
+            or self.llm_provider == "openai"
+        ) and not self.has_openai_key:
             raise ValueError(
-                "OPENAI_API_KEY is required when EMBEDDING_PROVIDER=openai."
+                "OPENAI_API_KEY is required when an OpenAI provider is selected."
             )
         return self
 
@@ -63,5 +68,4 @@ class Settings(BaseSettings):
 @lru_cache
 def get_settings() -> Settings:
     """Return one cached settings instance per application process."""
-
     return Settings()
