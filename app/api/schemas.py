@@ -4,59 +4,74 @@ from pydantic import BaseModel, Field, field_validator
 
 
 class QueryRequest(BaseModel):
-    """Validated request accepted by the RAG query endpoint."""
+    """Validated request accepted by retrieval and query endpoints."""
 
-    query: str = Field(
+    question: str = Field(
         min_length=3,
         max_length=1000,
-        description="Support question submitted by the user.",
+        description="Technical-support question submitted by the user.",
     )
-    top_k: int | None = Field(
-        default=None,
-        ge=1,
-        le=20,
-        description="Optional number of relevant chunks to retrieve.",
-    )
-    filters: dict[str, str] = Field(
-        default_factory=dict,
-        description="Optional metadata filters.",
-    )
+    top_k: int | None = Field(default=None, ge=1, le=20)
+    filters: dict[str, str] = Field(default_factory=dict)
 
-    @field_validator("query")
+    @field_validator("question")
     @classmethod
-    def normalize_query(cls, value: str) -> str:
+    def normalize_question(cls, value: str) -> str:
         normalized = " ".join(value.split())
-
         if len(normalized) < 3:
-            raise ValueError("Query must contain at least three characters.")
-
+            raise ValueError("Question must contain at least three characters.")
         return normalized
 
 
 class SourceReference(BaseModel):
-    """Source metadata returned with a grounded answer."""
-
     source: str
-    document_type: str
     title: str
-    section: str | None = None
-    score: float | None = Field(default=None, ge=0.0)
+    document_type: str | None = None
+    score: float | None = None
+
+
+class RetrievalItem(BaseModel):
+    source: str
+    title: str
+    chunk_id: str
+    score: float
+    content: str
+
+
+class RetrieveResponse(BaseModel):
+    request_id: str
+    results: list[RetrievalItem]
 
 
 class QueryResponse(BaseModel):
-    """Structured response returned by the RAG workflow."""
-
     request_id: str
     answer: str
     sources: list[SourceReference] = Field(default_factory=list)
     grounded: bool
-    latency_ms: float = Field(ge=0)
-    model: str
+    retrieval_ms: float = Field(ge=0)
+    generation_ms: float = Field(ge=0)
+    total_ms: float = Field(ge=0)
+    provider: str
+
+
+class EvaluationResponse(BaseModel):
+    evaluation_cases: int
+    answerable_cases: int
+    top_k: int
+    hit_rate_at_k: float
+    recall_at_k: float
+    mrr: float
+    failures: int
+
+
+class SourceDocument(BaseModel):
+    source: str
+    title: str
+    document_type: str | None = None
+    category: str | None = None
 
 
 class ErrorResponse(BaseModel):
-    """Safe error information returned to API consumers."""
-
     request_id: str
     error_code: str
     message: str
@@ -64,10 +79,8 @@ class ErrorResponse(BaseModel):
 
 
 class HealthResponse(BaseModel):
-    """Application health and dependency status."""
-
     status: Literal["healthy", "degraded", "unhealthy"]
     version: str
     vector_store_ready: bool
-    openai_configured: bool
-    
+    embedding_provider: str
+    llm_provider: str

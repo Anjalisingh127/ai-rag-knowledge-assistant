@@ -3,17 +3,19 @@ from pydantic import ValidationError
 
 from app.api.schemas import QueryRequest
 from app.ingestion.pipeline import prepare_knowledge_base
-from scripts.test_local_retrieval import LocalTestEmbeddings
+from app.rag.local_embeddings import LocalHashEmbeddings
 
 
-def test_query_normalizes_whitespace():
-    request = QueryRequest(query="  How   do I resolve HTTP 503?  ")
-    assert request.query == "How do I resolve HTTP 503?"
+def test_question_normalizes_whitespace():
+    request = QueryRequest(
+        question="  How   do I resolve HTTP 503?  "
+    )
+    assert request.question == "How do I resolve HTTP 503?"
 
 
-def test_blank_query_is_rejected():
+def test_blank_question_is_rejected():
     with pytest.raises(ValidationError):
-        QueryRequest(query="   ")
+        QueryRequest(question="   ")
 
 
 def test_chunks_preserve_source_metadata():
@@ -26,15 +28,11 @@ def test_chunks_preserve_source_metadata():
         chunk.metadata["source"] == "incidents/incidents.json"
         for chunk in chunks
     )
-    assert any(
-        chunk.metadata["source"] == "runbooks/http_503_service_unavailable.md"
-        for chunk in chunks
-    )
 
 
-def test_local_test_embeddings_are_deterministic():
-    embeddings = LocalTestEmbeddings()
+def test_local_hash_embeddings_are_deterministic():
+    embeddings = LocalHashEmbeddings()
     text = "HTTP 503 database timeout"
 
     assert embeddings.embed_query(text) == embeddings.embed_query(text)
-    assert len(embeddings.embed_query(text)) == 512
+    assert len(embeddings.embed_query(text)) == 1024

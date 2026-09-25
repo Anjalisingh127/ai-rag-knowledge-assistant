@@ -3,9 +3,6 @@ from langchain_openai import OpenAIEmbeddings
 
 from app.core.config import get_settings
 from app.core.exceptions import ConfigurationError
-from app.rag.sentence_transformer_embeddings import (
-    SentenceTransformerEmbeddings,
-)
 
 
 def get_embeddings() -> Embeddings:
@@ -14,6 +11,17 @@ def get_embeddings() -> Embeddings:
     settings = get_settings()
 
     if settings.embedding_provider == "local":
+        try:
+            from app.rag.sentence_transformer_embeddings import (
+                SentenceTransformerEmbeddings,
+            )
+        except ImportError as error:
+            raise ConfigurationError(
+                message=(
+                    "Local embeddings require the optional local dependencies. "
+                    "Install with: pip install -e .[local]"
+                )
+            ) from error
         return SentenceTransformerEmbeddings(settings.local_embedding_model)
 
     if not settings.has_openai_key or settings.openai_api_key is None:
