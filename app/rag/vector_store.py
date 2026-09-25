@@ -27,24 +27,29 @@ def build_vector_store(
         )
 
     settings = get_settings()
-    resolved_directory = (
-        output_directory or settings.vector_store_directory
-    )
+    resolved_directory = output_directory or settings.vector_store_directory
     resolved_directory.mkdir(parents=True, exist_ok=True)
 
     try:
         vector_store = FAISS.from_documents(documents, embeddings)
         vector_store.save_local(str(resolved_directory))
 
+        model_name = (
+            settings.local_embedding_model
+            if settings.embedding_provider == "local"
+            else settings.openai_embedding_model
+        )
         manifest = {
             "created_at": datetime.now(timezone.utc).isoformat(),
             "chunk_count": len(documents),
-            "embedding_model": settings.openai_embedding_model,
+            "embedding_provider": settings.embedding_provider,
+            "embedding_model": model_name,
+            "chunk_size": settings.chunk_size,
+            "chunk_overlap": settings.chunk_overlap,
             "index_type": "FAISS",
         }
 
-        manifest_path = resolved_directory / "manifest.json"
-        manifest_path.write_text(
+        (resolved_directory / "manifest.json").write_text(
             json.dumps(manifest, indent=2),
             encoding="utf-8",
         )
@@ -53,14 +58,11 @@ def build_vector_store(
             "Persisted FAISS index containing %s chunks.",
             len(documents),
         )
-
         return vector_store
 
     except Exception as error:
         logger.exception("Failed to create the FAISS vector index.")
-        raise VectorStoreError(
-            details={"reason": str(error)}
-        ) from error
+        raise VectorStoreError(details={"reason": str(error)}) from error
 
 
 def load_vector_store(
@@ -70,9 +72,7 @@ def load_vector_store(
     """Load the locally generated and trusted FAISS index."""
 
     settings = get_settings()
-    resolved_directory = (
-        input_directory or settings.vector_store_directory
-    )
+    resolved_directory = input_directory or settings.vector_store_directory
 
     index_file = resolved_directory / "index.faiss"
     metadata_file = resolved_directory / "index.pkl"
@@ -91,6 +91,4 @@ def load_vector_store(
         )
     except Exception as error:
         logger.exception("Failed to load the FAISS vector index.")
-        raise VectorStoreError(
-            details={"reason": str(error)}
-        ) from error
+        raise VectorStoreError(details={"reason": str(error)}) from error
