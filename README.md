@@ -1,100 +1,278 @@
 # AI-Enabled RAG Knowledge Assistant
 
-A technical-support knowledge assistant built to retrieve relevant incident,
-runbook and FAQ content, produce grounded answers, preserve source traceability,
-and measure retrieval quality.
+A portfolio-scale technical-support Retrieval-Augmented Generation (RAG) application built to search incident records, runbooks, and FAQs, retrieve relevant evidence, and return grounded answers with source traceability.
 
-> **Project status:** active implementation. Core ingestion, FAISS retrieval,
-> grounded generation, evaluation, FastAPI endpoints and Streamlit UI are
-> implemented. Docker/deployment and final benchmark publication come after
-> local validation.
+The project is designed around a practical support-engineering use case: before suggesting a troubleshooting action, the application retrieves evidence from a controlled knowledge base instead of relying on an unsupported model response.
+
+> **Project status:** core RAG pipeline and retrieval evaluation are complete and validated locally. FastAPI and Streamlit application layers are implemented; end-to-end runtime validation, Docker, deployment, and final demo assets remain.
+
+## Current results
+
+The retrieval layer has been evaluated on a curated 30-query benchmark containing 25 answerable support questions and 5 unsupported questions.
+
+| Retrieval strategy | Hit Rate@5 | Recall@5 | MRR | Answerable retrieval failures |
+| --- | ---: | ---: | ---: | ---: |
+| Deterministic hash baseline | 92% | 92% | 0.6013 | 2 |
+| MiniLM semantic embeddings | **100%** | **100%** | **0.9200** | **0** |
+
+The comparison uses the same knowledge corpus, evaluation questions, and Top-K value. Evaluation files are intentionally excluded from the searchable corpus to prevent benchmark leakage.
+
+These numbers measure **retrieval quality**, not end-to-end “RAG accuracy.”
 
 ## Why I built it
 
-Support teams often search across incident records and troubleshooting
-documentation before deciding what to check next. This project models that
-workflow with a focused RAG pipeline rather than sending an unsupported prompt
-directly to an LLM.
+Technical-support work often involves searching incident history and troubleshooting documentation before deciding what to investigate next. I built this project to model that workflow while learning how a RAG application can be structured, tested, measured, and exposed as a usable service.
 
-Example:
+The design focuses on:
+
+- local/free execution for the main portfolio workflow;
+- source-aware retrieval and grounded responses;
+- measurable retrieval quality rather than vague accuracy claims;
+- separation between ingestion, retrieval, generation, API, and UI layers;
+- deterministic tests that do not require a paid API;
+- explicit handling of unsupported questions.
+
+All operational records included in this repository are synthetic.
+
+## Architecture
 
 ```text
-Question
-  -> normalize
-  -> retrieve top-K knowledge chunks
-  -> check whether evidence is sufficient
-  -> build traceable context
-  -> generate/extract grounded answer
-  -> return source metadata
-  -> log timing / evaluate retrieval
+                    Knowledge Sources
+              incidents / runbooks / FAQ
+                         |
+                         v
+              +----------------------+
+              | Ingestion Pipeline   |
+              | loaders + chunking   |
+              +----------+-----------+
+                         |
+                         v
+              +----------------------+
+              | Embedding Layer      |
+              | MiniLM / OpenAI      |
+              +----------+-----------+
+                         |
+                         v
+              +----------------------+
+              | FAISS Vector Store   |
+              +----------+-----------+
+                         |
+User Question ----------+
+                         v
+              +----------------------+
+              | Vector Retriever     |
+              | Top-K + metadata     |
+              +----------+-----------+
+                         |
+                         v
+              +----------------------+
+              | Evidence / Context   |
+              | sufficiency check    |
+              +----------+-----------+
+                         |
+                         v
+              +----------------------+
+              | Generation Layer     |
+              | context/OpenAI/Ollama|
+              +----------+-----------+
+                         |
+                         v
+              Grounded Answer + Sources
+                         |
+              +----------+-----------+
+              |                      |
+              v                      v
+         FastAPI API            Streamlit UI
 ```
 
-All operational records in this repository are synthetic.
+The evaluation pipeline is kept separate from the searchable knowledge base:
+
+```text
+data/evaluation/
+      |
+      v
+Evaluation Runner
+      |
+      +--> Hash baseline
+      |
+      +--> MiniLM semantic retrieval
+      |
+      v
+Hit Rate@K / Recall@K / MRR / failure analysis
+```
+
+More detail is available in [docs/architecture.md](docs/architecture.md).
 
 ## Tech stack
 
-- Python 3.12
-- FastAPI + Pydantic
-- LangChain components
-- FAISS
-- local Sentence Transformers or OpenAI embeddings
-- context-only, OpenAI or Ollama generation
-- Streamlit
-- pytest + Ruff
-- GitHub Actions
+| Area | Technology |
+| --- | --- |
+| Language | Python 3.12 |
+| API | FastAPI, Pydantic |
+| RAG components | LangChain Core / Community |
+| Vector search | FAISS |
+| Local semantic embeddings | Sentence Transformers, `all-MiniLM-L6-v2` |
+| Test embeddings | Deterministic local hash embeddings |
+| Optional embeddings | OpenAI |
+| Generation | Context-only fallback, OpenAI, or Ollama |
+| Frontend | Streamlit |
+| Testing | pytest |
+| Code quality | Ruff |
+| CI | GitHub Actions |
+| Configuration | Pydantic Settings, environment variables |
+
+The validated portfolio path uses local MiniLM embeddings and does not require a paid embedding API.
 
 ## Knowledge base
 
-The repository currently covers:
+The searchable corpus currently contains synthetic support material covering:
 
-- HTTP 503 / service availability
-- database timeouts and connection issues
-- authentication failures
-- slow API responses
-- network and DNS connectivity
-- application-support escalation and validation guidance
+- HTTP 503 and service availability;
+- database timeout and connection issues;
+- authentication failures;
+- slow API responses;
+- network connectivity and DNS failures;
+- troubleshooting, escalation, and validation guidance.
 
-Data lives under `data/` as structured incidents, Markdown runbooks, an FAQ
-and a curated retrieval-evaluation set.
+Only these directories are loaded into the searchable corpus:
+
+```text
+data/incidents/
+data/runbooks/
+data/faq/
+```
+
+The benchmark lives separately under `data/evaluation/` and is not ingested into FAISS. This separation was added after identifying evaluation-data leakage during testing.
+
+The current local index contains **25 chunks**.
 
 ## Project structure
 
 ```text
 app/
-  api/            FastAPI routes, schemas and dependencies
-  core/           configuration, exceptions and structured logging
-  evaluation/     retrieval metrics and evaluation runner
-  ingestion/      loaders and chunking pipeline
-  rag/            embeddings, FAISS, retrieval, context and generation
+  api/              FastAPI application, routes, schemas and dependencies
+  core/             configuration, exceptions and structured logging
+  evaluation/       metrics and retrieval evaluation runner
+  ingestion/        document loaders and chunking pipeline
+  rag/              embeddings, FAISS, retrieval, context and generation
 
 data/
-  incidents/
-  runbooks/
-  faq/
-  evaluation/
+  incidents/        synthetic incident records
+  runbooks/         troubleshooting runbooks
+  faq/              support FAQ
+  evaluation/       isolated benchmark dataset
+
+reports/
+  retrieval_metrics_hash.json
+  retrieval_metrics_minilm.json
 
 scripts/
   build_index.py
   run_evaluation.py
   test_local_retrieval.py
 
-tests/
-docs/
+tests/              automated test suite
+docs/               architecture, evaluation and limitations
+.github/workflows/  CI configuration
 ```
 
-See [architecture](docs/architecture.md), [evaluation](docs/evaluation.md) and
-[limitations](docs/limitations.md) for engineering details.
+## RAG workflow
+
+For a normal query, the application follows this flow:
+
+```text
+Question
+  -> retrieve Top-K chunks
+  -> preserve source metadata
+  -> check evidence sufficiency
+  -> build traceable context
+  -> generate/extract a grounded response
+  -> return answer + citations/sources + timing information
+```
+
+The generation layer is provider-independent. A deterministic context-only generator can be used for local testing, while OpenAI and Ollama are optional generation providers.
+
+## Retrieval evaluation
+
+Retrieval is evaluated independently from generation so that retrieval failures can be measured directly.
+
+The benchmark currently contains:
+
+- **30 total queries**
+- **25 answerable queries**
+- **5 unsupported queries**
+- **Top-K = 5**
+
+Run the deterministic baseline:
+
+```bash
+python scripts/run_evaluation.py --embedding hash
+```
+
+Run the local semantic evaluation:
+
+```bash
+python scripts/run_evaluation.py --embedding minilm
+```
+
+Results are stored separately:
+
+```text
+reports/retrieval_metrics_hash.json
+reports/retrieval_metrics_minilm.json
+```
+
+### Measured benchmark
+
+The deterministic hash implementation provides a reproducible offline baseline:
+
+```text
+Hit Rate@5 : 0.92
+Recall@5   : 0.92
+MRR        : 0.6013
+Failures   : 2
+```
+
+Using local MiniLM semantic embeddings on the same benchmark:
+
+```text
+Hit Rate@5 : 1.00
+Recall@5   : 1.00
+MRR        : 0.9200
+Failures   : 0
+```
+
+The semantic model therefore improved both Top-5 coverage and ranking quality on the current curated dataset. Because this is a small portfolio benchmark over synthetic data, the result should not be interpreted as production-scale performance.
+
+See [docs/evaluation.md](docs/evaluation.md) for the evaluation design.
+
+## Local validation completed
+
+The current checkpoint has been validated locally with:
+
+```text
+Ruff                     PASS
+pytest                    18 passed
+Retrieval smoke test      PASS
+Indexed chunks            25
+MiniLM Hit Rate@5         100%
+MiniLM Recall@5           100%
+MiniLM MRR                0.92
+MiniLM retrieval failures 0
+```
+
+The remaining Starlette TestClient deprecation warning originates from the installed dependency stack and does not currently cause a test failure.
 
 ## Local setup
 
-### 1. Clone
+### 1. Clone the repository
 
 ```bash
 git clone https://github.com/Anjalisingh127/ai-rag-knowledge-assistant.git
 cd ai-rag-knowledge-assistant
 ```
 
-### 2. Create and activate a virtual environment
+### 2. Create the Python environment
 
 Windows PowerShell:
 
@@ -103,135 +281,175 @@ py -3.12 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 ```
 
-### 3. Install
+### 3. Install dependencies
 
-For tests/API development without downloading a transformer model:
+For development and automated tests:
 
 ```bash
 python -m pip install --upgrade pip
 pip install -e ".[dev]"
 ```
 
-For the free local transformer embedding provider:
+For the validated local MiniLM embedding path:
 
 ```bash
 pip install -e ".[dev,local]"
 ```
 
-### 4. Configure environment
+### 4. Configure environment variables
 
 ```powershell
 Copy-Item .env.example .env
 ```
 
-The default configuration uses local embeddings and the deterministic
-context-only generator. No paid LLM API is required for tests or retrieval
-evaluation.
+Secrets are read from environment configuration. The local `.env` file is ignored by Git.
 
 ## Build the FAISS index
-
-With the local optional dependencies installed:
 
 ```bash
 python scripts/build_index.py
 ```
 
-The generated index is stored under `vector_store/` and is intentionally
-ignored by Git.
+The current MiniLM build produces a local FAISS index from 25 knowledge chunks. Generated vector-store files are intentionally excluded from version control.
 
-## Run retrieval evaluation
-
-```bash
-python scripts/run_evaluation.py
-```
-
-The report is written to `reports/retrieval_metrics.json`. Metrics are not
-claimed in this README until they are measured from a validated run.
-
-## Run tests
+## Run the quality checks
 
 ```bash
-pytest
+python -m ruff check .
+python -m pytest
+python scripts/test_local_retrieval.py
 ```
 
-Lint:
+The automated suite currently contains **18 passing tests**.
 
-```bash
-ruff check .
-```
+## FastAPI application
 
-## Run the API
+The API layer is implemented with the following endpoints:
+
+| Method | Endpoint | Purpose |
+| --- | --- | --- |
+| GET | `/health` | service health |
+| POST | `/api/retrieve` | retrieve relevant knowledge chunks |
+| POST | `/api/query` | execute the RAG query workflow |
+| GET | `/api/sources` | inspect available knowledge sources |
+| POST | `/api/evaluate` | run retrieval evaluation |
+
+Start it locally with:
 
 ```bash
 uvicorn app.api.app:app --reload
 ```
 
-OpenAPI docs are available locally at `/docs`.
+OpenAPI documentation is then available at `/docs`.
 
-Implemented endpoints:
+**Current status:** API code and automated API tests are implemented. Full manual end-to-end validation against the real MiniLM index is the next application milestone.
 
-- `GET /health`
-- `POST /api/retrieve`
-- `POST /api/query`
-- `GET /api/sources`
-- `POST /api/evaluate`
+## Streamlit interface
 
-## Run the Streamlit UI
+The Streamlit client is implemented and configured to communicate with the FastAPI service.
 
-Start the API first, then in another terminal:
+After starting the API, run:
 
 ```bash
 streamlit run app/streamlit_app.py
 ```
 
+**Current status:** the UI implementation exists, but final end-to-end UI validation, presentation cleanup, and portfolio screenshots are still pending.
+
 ## Provider configuration
 
-The application supports separate embedding and generation choices through
-environment variables.
+Embedding providers:
 
-Embeddings:
+- `local` — Sentence Transformers / MiniLM;
+- `openai` — optional OpenAI embeddings.
 
-- `local` - Sentence Transformers, free/local after model download
-- `openai` - optional OpenAI embeddings
+Generation providers:
 
-Generation:
+- `context` — deterministic extractive fallback suitable for free local demos and tests;
+- `openai` — optional hosted generation;
+- `ollama` — optional local generation.
 
-- `context` - deterministic extractive fallback for free demos and tests
-- `openai` - optional OpenAI chat model
-- `ollama` - optional local Ollama model
+The architecture keeps embedding and generation choices separate so that either layer can be changed without rewriting the full application.
 
-API keys are read only from environment configuration and `.env` is ignored.
+## Testing and CI
 
-## Evaluation
+The test suite covers the project foundation, ingestion, retrieval, generation, evaluation, and API behavior.
 
-The project measures retrieval separately from generation. The current
-evaluation code calculates Hit Rate@K, Recall@K and MRR and records failed
-queries for inspection.
+GitHub Actions is configured to run Ruff and pytest on pushes and pull requests to `main`. CI intentionally uses the deterministic embedding implementation rather than downloading the transformer model, keeping automated checks lightweight and independent of an external model download.
 
-This is deliberate: a statement such as “95% RAG accuracy” is not meaningful
-without a defined metric and dataset.
+## Engineering decisions
 
-## CI
+**Evaluation isolation.** The evaluation dataset is excluded from ingestion. This prevents benchmark questions from becoming searchable evidence and artificially improving retrieval scores.
 
-GitHub Actions runs Ruff and pytest on pushes and pull requests to `main`.
-The local transformer model is not downloaded in CI because automated tests use
-a deterministic offline embedding implementation.
+**Measured retrieval.** Hit Rate@K, Recall@K, and MRR are reported instead of an undefined “RAG accuracy” percentage.
 
-## Limitations
+**Local-first design.** The primary retrieval path can run locally with Sentence Transformers and FAISS without a paid API.
 
-This is a portfolio-scale system built over synthetic operational data. It is
-not connected to a real production ticketing platform, and the local FAISS
-index is not a distributed search service. See [docs/limitations.md](docs/limitations.md).
+**Deterministic CI.** Tests use lightweight deterministic embeddings where semantic model quality is not the behavior under test.
 
-## Roadmap
+**Source traceability.** Retrieved chunks retain metadata so responses can expose the evidence used by the RAG pipeline.
 
-Next validated stages:
+**Provider separation.** Retrieval and generation providers are configurable instead of being tightly coupled to one vendor.
 
-1. run the complete local quality gate and record the actual baseline;
-2. improve retrieval only where the evaluation identifies real failures;
-3. add Docker;
-4. deploy the API/UI;
-5. publish measured metrics and demo screenshots.
+## Current limitations
+
+This is a portfolio-scale application rather than a production support platform.
+
+Current limitations include:
+
+- synthetic rather than production incident data;
+- a small curated evaluation dataset;
+- local FAISS rather than a distributed vector database;
+- character-based chunking rather than a token-aware strategy;
+- no BM25/hybrid retrieval or reranking layer;
+- no authentication or authorization layer;
+- no live ServiceNow/ticketing-system integration;
+- no Docker image yet;
+- no public deployment yet;
+- final API/UI manual validation and demo screenshots are pending.
+
+These limitations are intentionally documented rather than hidden. Additional detail is available in [docs/limitations.md](docs/limitations.md).
+
+## Completed milestones
+
+- [x] project configuration and environment structure
+- [x] synthetic technical-support knowledge base
+- [x] multi-format ingestion foundation
+- [x] chunking and source metadata
+- [x] FAISS vector retrieval
+- [x] deterministic offline embedding implementation
+- [x] local Sentence Transformer embedding implementation
+- [x] grounded context/generation layer
+- [x] retrieval sufficiency and unsupported-query handling
+- [x] FastAPI service implementation
+- [x] Streamlit client implementation
+- [x] retrieval evaluation framework
+- [x] evaluation-data isolation
+- [x] hash-vs-MiniLM controlled benchmark
+- [x] 18-test automated suite
+- [x] Ruff quality gate
+- [x] GitHub Actions workflow
+- [x] benchmark reports committed to the repository
+
+## Remaining roadmap
+
+The next work is focused on validating and packaging the existing system rather than adding features without evidence.
+
+1. **End-to-end API validation** — run FastAPI against the real MiniLM FAISS index and manually validate health, retrieval, query, sources, evaluation, grounding, and unsupported-query behavior.
+2. **Streamlit integration validation** — run the UI against the API, test real support queries, and improve presentation where necessary.
+3. **Documentation evidence** — capture representative API/UI screenshots and update the documentation with the validated workflow.
+4. **Containerization** — add Docker configuration only after the local application path is stable.
+5. **Deployment** — select a suitable free/low-cost deployment path for the API/UI and validate it.
+6. **Final portfolio cleanup** — review README, architecture/evaluation docs, repository structure, CI status, and recruiter-facing presentation.
+7. **Resume evidence** — use only the final measured metrics and completed functionality in project bullets.
+
+Potential future improvements after the validated portfolio version include a larger evaluation set, hybrid retrieval/reranking if metrics justify it, and integration with a real support/ticketing data source.
+
+## Documentation
+
+- [Architecture](docs/architecture.md)
+- [Evaluation methodology](docs/evaluation.md)
+- [Known limitations](docs/limitations.md)
 
 ## License
 
