@@ -23,21 +23,39 @@ class QueryResult:
     total_ms: float
     results: list[RetrievedChunk]
 
-
-def _has_relevant_context(question: str, results: list[RetrievedChunk]) -> bool:
+def _has_relevant_context(
+    question: str,
+    results: list[RetrievedChunk],
+    *,
+    minimum_term_matches: int = 2,
+    minimum_coverage: float = 0.4,
+) -> bool:
     terms = {
         token
         for token in re.findall(r"[a-z0-9_\-]+", question.lower())
         if len(token) > 2 and token not in _STOPWORDS
     }
+
     if not terms or not results:
         return False
 
-    context = " ".join(
-        result.document.page_content.lower() for result in results
-    )
-    return any(term in context for term in terms)
+    for result in results:
+        content = result.document.page_content.lower()
 
+        matched_terms = {
+            term for term in terms if term in content
+        }
+
+        match_count = len(matched_terms)
+        coverage = match_count / len(terms)
+
+        if (
+            match_count >= minimum_term_matches
+            and coverage >= minimum_coverage
+        ):
+            return True
+
+    return False
 
 class RAGService:
     def __init__(self, retriever: VectorRetriever, generator: Generator) -> None:

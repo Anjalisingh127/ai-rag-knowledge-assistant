@@ -49,6 +49,8 @@ def chunk_documents(
         chunk_overlap=resolved_chunk_overlap,
         separators=["\n## ", "\n### ", "\n\n", "\n", ". ", " ", ""],
         length_function=len,
+        keep_separator=True,
+        strip_whitespace=True,
     )
 
     chunks: list[Document] = []

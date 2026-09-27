@@ -143,7 +143,11 @@ def sources() -> list[SourceDocument]:
 
 @router.post("/api/evaluate", response_model=EvaluationResponse)
 def evaluate() -> EvaluationResponse:
-    result = run_retrieval_evaluation(top_k=5)
+    result = run_retrieval_evaluation(
+        top_k=5,
+        embedding_strategy="minilm",
+    )
+
     return EvaluationResponse(
         evaluation_cases=result["evaluation_cases"],
         answerable_cases=result["answerable_cases"],
