@@ -13,9 +13,6 @@ from app.evaluation.metrics import (
 from app.ingestion.pipeline import prepare_knowledge_base
 from app.rag.local_embeddings import LocalHashEmbeddings
 from app.rag.retriever import VectorRetriever, unique_sources
-from app.rag.sentence_transformer_embeddings import (
-    SentenceTransformerEmbeddings,
-)
 
 EmbeddingStrategy = Literal["hash", "minilm"]
 
@@ -33,7 +30,12 @@ def _create_embeddings(strategy: EmbeddingStrategy):
         return LocalHashEmbeddings()
 
     if strategy == "minilm":
+        from app.rag.sentence_transformer_embeddings import (
+            SentenceTransformerEmbeddings,
+        )
+
         settings = get_settings()
+
         return SentenceTransformerEmbeddings(
             model_name=settings.local_embedding_model
         )
@@ -53,11 +55,17 @@ def run_retrieval_evaluation(
         / "evaluation"
         / "rag_eval_dataset.json"
     )
+
     cases = load_evaluation_dataset(dataset_path)
 
     chunks = prepare_knowledge_base()
     embeddings = _create_embeddings(embedding_strategy)
-    store = FAISS.from_documents(chunks, embeddings)
+
+    store = FAISS.from_documents(
+        chunks,
+        embeddings,
+    )
+
     retriever = VectorRetriever(store)
 
     metric_rows = []
@@ -74,12 +82,14 @@ def run_retrieval_evaluation(
             case["question"],
             top_k=top_k,
         )
+
         sources = unique_sources(results)
 
         row = evaluate_retrieval_case(
             case["expected_sources"],
             sources,
         )
+
         metric_rows.append(row)
 
         if row[0] == 0.0:
@@ -109,19 +119,27 @@ def write_evaluation_report(result: dict) -> Path:
     """Persist an evaluation report without overwriting another strategy."""
 
     settings = get_settings()
+
     settings.reports_directory.mkdir(
         parents=True,
         exist_ok=True,
     )
 
-    strategy = result.get("embedding_strategy", "unknown")
+    strategy = result.get(
+        "embedding_strategy",
+        "unknown",
+    )
+
     output = (
         settings.reports_directory
         / f"retrieval_metrics_{strategy}.json"
     )
 
     output.write_text(
-        json.dumps(result, indent=2),
+        json.dumps(
+            result,
+            indent=2,
+        ),
         encoding="utf-8",
     )
 
