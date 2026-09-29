@@ -14,8 +14,9 @@ tags: http-503, availability, database-timeout, dependency-failure
 
 ## Purpose
 
-Use this runbook when an application or API returns HTTP 503 responses. All
-services, incidents and operational records in this project are synthetic.
+Use this runbook when an application or API returns HTTP 503 responses.
+
+All services, incidents and operational records in this project are synthetic.
 
 ## Common causes
 

@@ -43,6 +43,7 @@ def test_known_query_returns_clean_grounded_answer():
     corrupted_phrases = [
         "thisrunbook",
         "responses.All",
+        "responses. All",
         "isbelow",
         "forat",
         "anddetection",
