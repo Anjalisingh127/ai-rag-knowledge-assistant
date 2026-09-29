@@ -116,6 +116,20 @@ Kubernetes troubleshooting is outside the current knowledge base, so the system 
 
 This behavior has been validated through the Streamlit UI and FastAPI-backed RAG service.
 
+## Application Demo
+
+### Grounded response for a supported query
+
+The HTTP 503 example shows the validated supported-query path: retrieval succeeds, the answer is marked as grounded, and the UI exposes the supporting runbook and incident sources.
+
+![Grounded HTTP 503 response](docs/images/rag-supported-http503.png)
+
+### Safe abstention for an unsupported query
+
+The Kubernetes example shows the failure-handling path: the knowledge base does not contain sufficient support for the question, so the system abstains and returns no misleading supporting sources.
+
+![Unsupported-query abstention](docs/images/rag-unsupported-abstention.png)
+
 ---
 
 ## Architecture
@@ -544,18 +558,18 @@ See [docs/limitations.md](docs/limitations.md).
 - [x] Supported-query UI validation
 - [x] Unsupported-query UI validation
 - [x] Retrieval reports committed
+- [x] Portfolio UI screenshots added to repository documentation
 
 ---
 
 ## Next Steps
 
-1. Add final portfolio screenshots to repository documentation.
-2. Containerize the validated API/UI workflow with Docker.
-3. Validate the application locally from containers.
-4. Deploy using a suitable free/low-cost platform.
-5. Verify the public health, retrieval, grounding, and abstention flows.
-6. Complete final repository and recruiter-facing portfolio cleanup.
-7. Use only measured, completed functionality in resume bullets.
+1. Containerize the validated API/UI workflow with Docker.
+2. Validate the application locally from containers.
+3. Deploy using a suitable free/low-cost platform.
+4. Verify the public health, retrieval, grounding, and abstention flows.
+5. Complete final repository and recruiter-facing portfolio cleanup.
+6. Use only measured, completed functionality in resume bullets.
 
 Potential later improvements include a larger evaluation dataset, hybrid retrieval/reranking when justified by metrics, and integration with a real support or ticketing data source.
 
