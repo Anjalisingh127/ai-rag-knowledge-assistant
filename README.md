@@ -10,7 +10,7 @@ A portfolio-scale **Retrieval-Augmented Generation (RAG)** application for techn
 
 The project is designed to demonstrate practical software-engineering work around RAG: modular architecture, local semantic retrieval, measurable evaluation, failure handling, automated tests, API/UI integration, and reproducible validation.
 
-> **Current status:** Core RAG pipeline, MiniLM + FAISS semantic retrieval, grounding, retrieval evaluation, FastAPI, Streamlit, automated tests, local end-to-end validation, and GitHub Actions CI are complete. Docker packaging and public deployment are the next implementation stages.
+> **Current status:** Core RAG pipeline, MiniLM + FAISS semantic retrieval, grounding, retrieval evaluation, FastAPI, Streamlit, automated tests, local end-to-end validation, GitHub Actions CI, and Docker containerization are complete. Public deployment is the next implementation stage.
 
 ---
 
@@ -222,6 +222,7 @@ See [docs/architecture.md](docs/architecture.md) for additional design notes.
 | Testing | pytest, pytest-cov |
 | Code quality | Ruff |
 | CI | GitHub Actions |
+| Containerization | Docker, Docker Compose |
 | Document support | Markdown, JSON, CSV, PDF |
 
 The validated portfolio path uses local MiniLM embeddings and FAISS, so the primary retrieval workflow does not require a paid API.
@@ -364,6 +365,9 @@ ai-rag-knowledge-assistant/
 ├── .env.example
 ├── pyproject.toml
 ├── LICENSE
+├── Dockerfile.api
+├── Dockerfile.ui
+├── docker-compose.yml
 └── README.md
 ```
 
@@ -430,7 +434,56 @@ In a second terminal:
 streamlit run app/streamlit_app.py
 ```
 
+
 ---
+
+## Docker
+
+The validated local application is containerized as two services:
+
+- **rag-api** — FastAPI + MiniLM + FAISS
+- **rag-ui** — Streamlit frontend
+
+The API image builds the local FAISS index during image creation and exposes port `8000`. The UI communicates with the API over the internal Docker Compose network and exposes port `8501`.
+
+Build both images:
+
+```bash
+docker compose build
+```
+
+Start the stack:
+
+```bash
+docker compose up -d
+```
+
+Check container status:
+
+```bash
+docker compose ps
+```
+
+Validate the API:
+
+```powershell
+Invoke-RestMethod http://localhost:8000/health
+```
+
+Validated container behavior:
+
+```text
+API container                 PASS
+UI container                  PASS
+API healthcheck               PASS
+UI waits for healthy API      PASS
+MiniLM + FAISS retrieval      PASS
+HTTP 503 grounded flow        PASS
+Unsupported-query abstention  PASS
+```
+
+The Compose configuration uses an API healthcheck, and the Streamlit service starts only after the API reports healthy.
+
 
 ## Evaluation
 
@@ -527,7 +580,6 @@ Current limitations:
 - no authentication or authorization layer;
 - no live ServiceNow/ticketing-system integration;
 - OpenAI and Ollama paths are configurable but are not part of the validated local E2E benchmark;
-- no Docker image yet;
 - no public deployment yet.
 
 See [docs/limitations.md](docs/limitations.md).
@@ -559,17 +611,19 @@ See [docs/limitations.md](docs/limitations.md).
 - [x] Unsupported-query UI validation
 - [x] Retrieval reports committed
 - [x] Portfolio UI screenshots added to repository documentation
+- [x] Dockerized FastAPI service
+- [x] Dockerized Streamlit interface
+- [x] Docker Compose networking and API healthcheck
+- [x] Local container end-to-end validation
 
 ---
 
 ## Next Steps
 
-1. Containerize the validated API/UI workflow with Docker.
-2. Validate the application locally from containers.
-3. Deploy using a suitable free/low-cost platform.
-4. Verify the public health, retrieval, grounding, and abstention flows.
-5. Complete final repository and recruiter-facing portfolio cleanup.
-6. Use only measured, completed functionality in resume bullets.
+1. Deploy the validated containerized application using a suitable free/low-cost platform.
+2. Verify the public health, retrieval, grounding, and abstention flows.
+3. Complete final repository and recruiter-facing portfolio cleanup.
+4. Use only measured, completed functionality in resume bullets.
 
 Potential later improvements include a larger evaluation dataset, hybrid retrieval/reranking when justified by metrics, and integration with a real support or ticketing data source.
 
