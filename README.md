@@ -10,12 +10,13 @@ A portfolio-scale **Retrieval-Augmented Generation (RAG)** application for techn
 
 The project is designed to demonstrate practical software-engineering work around RAG: modular architecture, local semantic retrieval, measurable evaluation, failure handling, automated tests, API/UI integration, and reproducible validation.
 
-> **Current status:** Core RAG pipeline, MiniLM + FAISS semantic retrieval, grounding, retrieval evaluation, FastAPI, Streamlit, automated tests, local end-to-end validation, GitHub Actions CI, and Docker containerization are complete. Public deployment is the next implementation stage.
+> **Current status:** Core RAG pipeline, MiniLM + FAISS semantic retrieval, grounding, retrieval evaluation, FastAPI, Streamlit, automated tests, local end-to-end validation, GitHub Actions CI, Docker containerization, and public Streamlit deployment are complete.
 
 ---
 
 ## Quick Links
 
+- [Live demo](https://anjali-rag-knowledge-assistant.streamlit.app)
 - [Repository](https://github.com/Anjalisingh127/ai-rag-knowledge-assistant)
 - [GitHub Actions](https://github.com/Anjalisingh127/ai-rag-knowledge-assistant/actions)
 - [Architecture](docs/architecture.md)
@@ -36,6 +37,7 @@ The project is designed to demonstrate practical software-engineering work aroun
 - Independent retrieval evaluation using **Hit Rate@K, Recall@K, and MRR**
 - FastAPI endpoints for health, retrieval, querying, sources, and evaluation
 - Streamlit interface for interactive technical-support questions
+- Public Streamlit Community Cloud deployment using in-process MiniLM + FAISS retrieval
 - Deterministic hash embeddings for lightweight testing and CI
 - Optional OpenAI and Ollama generation paths
 - Automated testing with pytest and code-quality checks with Ruff
@@ -114,9 +116,14 @@ How do I fix Kubernetes pod eviction?
 
 Kubernetes troubleshooting is outside the current knowledge base, so the system returns an insufficient-context response and does not present unrelated documents as supporting evidence.
 
-This behavior has been validated through the Streamlit UI and FastAPI-backed RAG service.
+This behavior has been validated locally through the Streamlit UI and FastAPI-backed RAG service, and publicly through the Streamlit Community Cloud deployment.
 
 ## Application Demo
+
+**Live application:** [anjali-rag-knowledge-assistant.streamlit.app](https://anjali-rag-knowledge-assistant.streamlit.app)
+
+The public deployment runs the same RAG service in-process inside Streamlit Community Cloud, using local MiniLM embeddings, FAISS retrieval, grounding checks, deterministic context generation, and source traceability without requiring a paid API.
+
 
 ### Grounded response for a supported query
 
@@ -223,6 +230,7 @@ See [docs/architecture.md](docs/architecture.md) for additional design notes.
 | Code quality | Ruff |
 | CI | GitHub Actions |
 | Containerization | Docker, Docker Compose |
+| Public deployment | Streamlit Community Cloud |
 | Document support | Markdown, JSON, CSV, PDF |
 
 The validated portfolio path uses local MiniLM embeddings and FAISS, so the primary retrieval workflow does not require a paid API.
@@ -580,7 +588,6 @@ Current limitations:
 - no authentication or authorization layer;
 - no live ServiceNow/ticketing-system integration;
 - OpenAI and Ollama paths are configurable but are not part of the validated local E2E benchmark;
-- no public deployment yet.
 
 See [docs/limitations.md](docs/limitations.md).
 
@@ -615,15 +622,18 @@ See [docs/limitations.md](docs/limitations.md).
 - [x] Dockerized Streamlit interface
 - [x] Docker Compose networking and API healthcheck
 - [x] Local container end-to-end validation
+- [x] Public Streamlit Community Cloud deployment
+- [x] Public supported-query grounding validation
+- [x] Public unsupported-query abstention validation
 
 ---
 
 ## Next Steps
 
-1. Deploy the validated containerized application using a suitable free/low-cost platform.
-2. Verify the public health, retrieval, grounding, and abstention flows.
-3. Complete final repository and recruiter-facing portfolio cleanup.
-4. Use only measured, completed functionality in resume bullets.
+1. Complete final repository and recruiter-facing portfolio cleanup.
+2. Add the live demo link to the GitHub profile and resume where appropriate.
+3. Use only measured, completed functionality in resume bullets.
+4. Consider later improvements such as a larger evaluation dataset, hybrid retrieval/reranking, and support-system integration.
 
 Potential later improvements include a larger evaluation dataset, hybrid retrieval/reranking when justified by metrics, and integration with a real support or ticketing data source.
 
