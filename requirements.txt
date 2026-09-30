@@ -1,0 +1,3 @@
+# Streamlit Community Cloud deployment dependencies.
+# Keep Python 3.12 selected in Advanced settings to match the project runtime.
+-e .[local]
