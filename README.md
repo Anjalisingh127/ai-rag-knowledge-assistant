@@ -124,7 +124,6 @@ This behavior has been validated locally through the Streamlit UI and FastAPI-ba
 
 The public deployment runs the same RAG service in-process inside Streamlit Community Cloud, using local MiniLM embeddings, FAISS retrieval, grounding checks, deterministic context generation, and source traceability without requiring a paid API.
 
-
 ### Grounded response for a supported query
 
 The HTTP 503 example shows the validated supported-query path: retrieval succeeds, the answer is marked as grounded, and the UI exposes the supporting runbook and incident sources.
@@ -141,74 +140,7 @@ The Kubernetes example shows the failure-handling path: the knowledge base does 
 
 ## Architecture
 
-```text
-                         Knowledge Sources
-                 incidents / runbooks / FAQ
-                              |
-                              v
-                   +----------------------+
-                   | Ingestion Pipeline   |
-                   | loaders + chunking   |
-                   +----------+-----------+
-                              |
-                              v
-                   +----------------------+
-                   | Embedding Layer      |
-                   | MiniLM / OpenAI      |
-                   +----------+-----------+
-                              |
-                              v
-                   +----------------------+
-                   | FAISS Vector Store   |
-                   +----------+-----------+
-                              |
-User Question ----------------+
-                              v
-                   +----------------------+
-                   | Vector Retriever     |
-                   | Top-K + metadata     |
-                   +----------+-----------+
-                              |
-                              v
-                   +----------------------+
-                   | Grounding Check      |
-                   | relevance coverage   |
-                   +----------+-----------+
-                              |
-                  +-----------+-----------+
-                  |                       |
-                  v                       v
-          Context Generator            Abstain
-          OpenAI / Ollama                 |
-                  |                       |
-                  +-----------+-----------+
-                              |
-                              v
-                    Answer + Sources
-                              |
-                  +-----------+-----------+
-                  |                       |
-                  v                       v
-              FastAPI API           Streamlit UI
-```
-
-The evaluation path is intentionally isolated from the searchable corpus:
-
-```text
-data/evaluation/
-      |
-      v
-Evaluation Runner
-      |
-      +--> Hash baseline
-      |
-      +--> MiniLM semantic retrieval
-      |
-      v
-Hit Rate@K / Recall@K / MRR / failure analysis
-```
-
-See [docs/architecture.md](docs/architecture.md) for additional design notes.
+See [docs/architecture.md](docs/architecture.md) for the validated local/Docker path, the public in-process Streamlit path, and the isolated evaluation flow.
 
 ---
 
@@ -442,7 +374,6 @@ In a second terminal:
 streamlit run app/streamlit_app.py
 ```
 
-
 ---
 
 ## Docker
@@ -492,6 +423,7 @@ Unsupported-query abstention  PASS
 
 The Compose configuration uses an API healthcheck, and the Streamlit service starts only after the API reports healthy.
 
+---
 
 ## Evaluation
 
@@ -587,7 +519,7 @@ Current limitations:
 - no BM25/hybrid retrieval or reranking implementation yet;
 - no authentication or authorization layer;
 - no live ServiceNow/ticketing-system integration;
-- OpenAI and Ollama paths are configurable but are not part of the validated local E2E benchmark;
+- OpenAI and Ollama paths are configurable but are not part of the validated local E2E benchmark.
 
 See [docs/limitations.md](docs/limitations.md).
 
@@ -630,12 +562,10 @@ See [docs/limitations.md](docs/limitations.md).
 
 ## Next Steps
 
-1. Complete final repository and recruiter-facing portfolio cleanup.
-2. Add the live demo link to the GitHub profile and resume where appropriate.
-3. Use only measured, completed functionality in resume bullets.
-4. Consider later improvements such as a larger evaluation dataset, hybrid retrieval/reranking, and support-system integration.
-
-Potential later improvements include a larger evaluation dataset, hybrid retrieval/reranking when justified by metrics, and integration with a real support or ticketing data source.
+- Expand the evaluation dataset beyond the current curated benchmark.
+- Add hybrid retrieval or reranking only if measured evaluation shows a meaningful benefit.
+- Explore integration with a real support or ticketing data source.
+- Keep resume and portfolio claims limited to measured, validated functionality.
 
 ---
 
